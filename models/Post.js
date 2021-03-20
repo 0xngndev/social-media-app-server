@@ -13,9 +13,12 @@ const postSchema = new mongoose.Schema(
       minlength: 3,
       required: true,
     },
-    author: {
-      type: mongoose.Types.ObjectId,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    author: {
+      type: String,
     },
     likes: [
       {

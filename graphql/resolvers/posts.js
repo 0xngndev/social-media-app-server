@@ -1,7 +1,7 @@
 const { AuthenticationError, UserInputError } = require("apollo-server");
 
 const Post = require("../../models/Post");
-const checkAuth = require("../../util/validators");
+const checkAuth = require("../../util/check-auth");
 
 module.exports = {
   Query: {
@@ -39,7 +39,7 @@ module.exports = {
         body,
         title,
         user: user.id,
-        username: user.username,
+        author: user.username,
         createdAt: new Date().toISOString(),
       });
 
@@ -51,44 +51,60 @@ module.exports = {
 
       return post;
     },
-    updatePost: async (_, { postId, body, title }) => {
+    updatePost: async (_, { postId, body, title }, context) => {
       const user = checkAuth(context);
-      if (!user) {
-        throw AuthenticationError("You must be logged in to create a post");
+
+      if (body.trim() === "") {
+        throw new Error("You must provide a body");
       }
-      if (!body) {
-        throw UserInputError("You must provide a body");
+      if (title.trim() === "") {
+        throw new Error("You must provide a title");
       }
 
-      if (!title) {
-        throw UserInputError("You must provide a title");
-      }
       if (!postId) {
         throw UserInputError("You must provide the post's ID");
       }
-      const updatedPost = await Post.updateOne(
-        { _id: postId },
-        {
-          $set: {
-            body,
-            title,
-          },
+
+      const updatedPostObj = {
+        title,
+        body,
+        updatedAt: Date.now(),
+      };
+
+      try {
+        const post = await Post.findById(postId);
+        if (!post) {
+          throw new UserInputError("That post does not exist");
         }
-      );
-      return updatedPost;
+
+        if (post.author !== user.username) {
+          throw new AuthenticationError("Access is denied");
+        }
+
+        const updatedPost = await Post.findByIdAndUpdate(
+          postId,
+          updatedPostObj,
+          { new: true }
+        );
+
+        return updatedPost;
+      } catch (err) {
+        throw new UserInputError(err);
+      }
     },
     deletePost: async (_, { postId }, context) => {
       const user = checkAuth(context);
 
       try {
         const post = await Post.findById(postId);
-        if (user.username === post.username) {
+
+        if (user.username === post.author) {
           await post.delete();
           return "Post deleted successfully";
         } else {
           throw new AuthenticationError("Action not allowed");
         }
-      } catch (error) {
+      } catch (err) {
         throw new Error(err);
       }
     },
