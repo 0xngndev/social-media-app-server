@@ -7,6 +7,12 @@ module.exports = gql`
     token: String!
     username: String!
     email: String!
+    followers: [Follower]!
+  }
+
+  type Follower {
+    id: ID!
+    username: String!
   }
 
   type Post {
@@ -43,6 +49,7 @@ module.exports = gql`
   type Query {
     getPost(postId: ID!): Post
     getPosts: [Post]
+    getUsers: [User]
   }
 
   type Mutation {
@@ -55,6 +62,7 @@ module.exports = gql`
     updateComment(postId: ID!, body: String!, commentId: ID!): Post!
     deleteComment(postId: ID!, commentId: ID!): Post!
     likePost(postId: ID!): Post!
+    followUser(userId: ID!): User!
   }
 
   type Subscription {

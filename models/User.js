@@ -21,8 +21,16 @@ const userSchema = new mongoose.Schema(
       minlength: 9,
       unique: true,
     },
+    followers: [
+      {
+        username: String,
+        createdAt: String,
+      },
+    ],
   },
   { timestamps: true }
 );
+
+userSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("User", userSchema);

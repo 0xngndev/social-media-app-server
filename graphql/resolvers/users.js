@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const checkAuth = require("../../util/check-auth");
 const { validateRegister, validateLogin } = require("../../util/validators");
 const { UserInputError } = require("apollo-server-errors");
 
@@ -17,6 +18,16 @@ const generateToken = (user) => {
 };
 
 module.exports = {
+  Query: {
+    getUsers: async () => {
+      try {
+        const users = await User.find({}).sort({ createdAt: -1 });
+        return users;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+  },
   Mutation: {
     register: async (_, { registerInput: { username, email, password } }) => {
       const { valid, errors } = validateRegister(username, email, password);
@@ -73,6 +84,31 @@ module.exports = {
         id: user._id,
         token,
       };
+    },
+    followUser: async (_, { userId }, context) => {
+      const user = checkAuth(context);
+      if (!user) {
+        throw new AuthenticationError("You must be logged in to follow users");
+      }
+      const followedUser = await User.findById(userId);
+      if (followedUser) {
+        if (
+          followedUser.followers.find(
+            (follower) => follower.username === user.username
+          )
+        ) {
+          followedUser.followers = followedUser.followers.filter(
+            (follower) => follower.username !== user.username
+          );
+        } else {
+          followedUser.followers.push({
+            id: user.id,
+            username: user.username,
+          });
+        }
+        await followedUser.save();
+        return followedUser;
+      } else throw new UserInputError("User not found");
     },
   },
 };

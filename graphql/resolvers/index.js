@@ -9,6 +9,7 @@ module.exports = {
   },
   Query: {
     ...postsResolver.Query,
+    ...usersResolver.Query,
   },
   Mutation: {
     ...postsResolver.Mutation,
