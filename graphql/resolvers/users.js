@@ -34,11 +34,16 @@ module.exports = {
       if (!valid) {
         throw new UserInputError("Errors", { errors });
       }
-      const user = await User.findOne({ username });
-      if (user.email === email) {
+
+      const [inUseEmail, user] = await Promise.all([
+        User.findOne({ email }),
+        User.findOne({ username }),
+      ]);
+
+      if (inUseEmail) {
         throw new UserInputError("Email is taken", {
           errors: {
-            email: "Email is taken",
+            email: "This Email is taken",
           },
         });
       }
