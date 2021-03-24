@@ -35,6 +35,13 @@ module.exports = {
         throw new UserInputError("Errors", { errors });
       }
       const user = await User.findOne({ username });
+      if (user.email === email) {
+        throw new UserInputError("Email is taken", {
+          errors: {
+            email: "Email is taken",
+          },
+        });
+      }
       if (user) {
         throw new UserInputError("Username is taken", {
           errors: {
@@ -42,6 +49,7 @@ module.exports = {
           },
         });
       }
+
       password = await bcrypt.hash(password, 12);
       const newUser = new User({
         username,

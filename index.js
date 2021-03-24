@@ -3,7 +3,8 @@ const typeDefs = require("./graphql/typeDefs");
 const resolvers = require("./graphql/resolvers");
 require("dotenv").config();
 const connectToDB = require("./db");
-require("dotenv").config();
+
+const port = process.env.PORT;
 
 const pubsub = new PubSub();
 
@@ -15,6 +16,6 @@ const server = new ApolloServer({
 
 connectToDB();
 
-server.listen().then(({ url }) => {
+server.listen(port).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
