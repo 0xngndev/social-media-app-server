@@ -1,24 +1,28 @@
 const { AuthenticationError, UserInputError } = require("apollo-server");
 
 const Post = require("../../models/Post");
+const User = require("../../models/User");
 const checkAuth = require("../../util/check-auth");
 
 module.exports = {
   Query: {
     getPost: async (_, { postId }) => {
       try {
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate("author", "username");
+        console.log(post);
         if (!post) {
           throw new Error("That post does not exist.");
         }
         return post;
       } catch (error) {
-        throw new Error("Post not founc");
+        throw new Error("Post not found");
       }
     },
     getPosts: async () => {
       try {
-        const posts = await Post.find({}).sort({ createdAt: -1 });
+        const posts = await Post.find({})
+          .sort({ createdAt: -1 })
+          .populate("author", "username");
         return posts;
       } catch (error) {
         throw new Error(error);
@@ -34,22 +38,33 @@ module.exports = {
       if (title.trim() === "") {
         throw new Error("You must provide a title");
       }
+      console.log(user);
 
-      const newPost = await new Post({
-        body,
-        title,
-        user: user.id,
-        author: user.username,
-        createdAt: new Date().toISOString(),
-      });
+      try {
+        const author = await User.findById(user.id);
 
-      const post = await newPost.save();
+        const newPost = await new Post({
+          body,
+          title,
+          author: author._id,
+          createdAt: new Date().toISOString(),
+        });
+        const savedPost = await newPost.save();
+        const populatedPost = await savedPost
+          .populate("author", "username")
+          .execPopulate();
 
-      context.pubsub.publish("NEW_POST", {
-        newPost: post,
-      });
+        author.posts.push(savedPost._id);
+        await author.save();
 
-      return post;
+        context.pubsub.publish("NEW_POST", {
+          newPost: populatedPost,
+        });
+
+        return populatedPost;
+      } catch (error) {
+        throw new Error(error);
+      }
     },
     updatePost: async (_, { postId, body, title }, context) => {
       const user = checkAuth(context);
@@ -77,7 +92,7 @@ module.exports = {
           throw new UserInputError("That post does not exist");
         }
 
-        if (post.author !== user.username) {
+        if (user.id === post.author.toString()) {
           throw new AuthenticationError("Access is denied");
         }
 
@@ -97,8 +112,16 @@ module.exports = {
 
       try {
         const post = await Post.findById(postId);
+        const loggedUser = await User.findById(user.id);
 
-        if (user.username === post.author) {
+        if (!post) {
+          throw new UserInputError("That post does not exist");
+        }
+        if (user.id === post.author.toString()) {
+          loggedUser.posts = loggedUser.posts.filter(
+            (p) => p.toString() !== postId
+          );
+          await loggedUser.save();
           await post.delete();
           return "Post deleted successfully";
         } else {

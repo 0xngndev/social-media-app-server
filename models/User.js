@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 5,
     },
+    posts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
     email: {
       type: String,
       required: true,
