@@ -9,6 +9,7 @@ module.exports = {
     getPost: async (_, { postId }) => {
       try {
         const post = await Post.findById(postId).populate("author", "username");
+
         console.log(post);
         if (!post) {
           throw new Error("That post does not exist.");

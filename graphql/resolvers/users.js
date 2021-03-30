@@ -27,9 +27,10 @@ module.exports = {
         throw new Error(error);
       }
     },
-    getUser: async (_, { userId }) => {
+    getUser: async (_, { token }) => {
       try {
-        const user = await User.findById(userId);
+        const { id } = jwt.verify(token, process.env.SECRET_KEY);
+        const user = await User.findById(id);
         return user;
       } catch (error) {
         throw new Error(error);
