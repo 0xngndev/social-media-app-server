@@ -36,6 +36,14 @@ module.exports = {
         throw new Error(error);
       }
     },
+    getUserById: async (_, { userId }) => {
+      try {
+        const user = await User.findById(userId);
+        return user;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
   Mutation: {
     register: async (_, { registerInput: { username, email, password } }) => {
