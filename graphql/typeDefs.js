@@ -27,6 +27,7 @@ module.exports = gql`
     commentCount: Int!
     likeCount: Int!
     createdAt: String!
+    excerpt: String!
   }
 
   type Author {
