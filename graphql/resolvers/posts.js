@@ -15,6 +15,8 @@ module.exports = {
         if (!post) {
           throw new Error("That post does not exist.");
         }
+        post.views++;
+        await post.save();
         return post;
       } catch (error) {
         throw new Error("Post not found");
@@ -56,7 +58,8 @@ module.exports = {
         const posts = await Post.find()
           .sort(sortDef)
           .limit(limit)
-          .skip(paginated.start);
+          .skip(paginated.start)
+          .populate("author", "username");
 
         const paginatedPosts = {
           previous: paginated.results.previous,
