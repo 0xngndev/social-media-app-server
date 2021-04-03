@@ -16,6 +16,12 @@ module.exports = {
           throw new Error("That post does not exist.");
         }
         post.views++;
+        post.hot =
+          Math.log(post.views * 2) +
+          Math.log(post.likes.length * 8) +
+          Math.log(post.comments.length * 3) +
+          post.createdAt / 10000000000;
+
         await post.save();
         return post;
       } catch (error) {
@@ -44,6 +50,9 @@ module.exports = {
           break;
         case "VIEWS":
           sortDef = { views: -1 };
+          break;
+        case "HOT":
+          sortDef = { hot: -1 };
           break;
         case "NEWEST":
           sortDef = { createdAt: -1 };

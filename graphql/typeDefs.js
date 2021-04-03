@@ -6,6 +6,7 @@ module.exports = gql`
     OLDEST
     VIEWS
     TOP
+    HOT
   }
 
   type User {
@@ -36,6 +37,7 @@ module.exports = gql`
     createdAt: String!
     excerpt: String!
     views: Int!
+    hot: Float!
   }
 
   type Author {
