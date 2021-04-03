@@ -42,6 +42,9 @@ module.exports = {
         case "TOP":
           sortDef = { likes: -1 };
           break;
+        case "VIEWS":
+          sortDef = { views: -1 };
+          break;
         case "NEWEST":
           sortDef = { createdAt: -1 };
           break;

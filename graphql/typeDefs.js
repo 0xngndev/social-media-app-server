@@ -4,6 +4,7 @@ module.exports = gql`
   enum SortByType {
     NEWEST
     OLDEST
+    VIEWS
     TOP
   }
 
