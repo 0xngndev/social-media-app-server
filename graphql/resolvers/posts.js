@@ -3,6 +3,7 @@ const { AuthenticationError, UserInputError } = require("apollo-server");
 const Post = require("../../models/Post");
 const User = require("../../models/User");
 const checkAuth = require("../../util/check-auth");
+const paginate = require("../../util/paginate");
 
 module.exports = {
   Query: {
@@ -27,6 +28,45 @@ module.exports = {
         return posts;
       } catch (error) {
         throw new Error(error);
+      }
+    },
+    getPaginatedPosts: async (_, args) => {
+      const { sortBy } = args;
+      const page = Number(args.page);
+      const limit = Number(args.limit);
+
+      let sortDef;
+      switch (sortBy) {
+        case "TOP":
+          sortDef = { likes: -1 };
+          break;
+        case "NEWEST":
+          sortDef = { createdAt: -1 };
+          break;
+        case "OLDEST":
+          sortDef = { createdAt: 1 };
+          break;
+        default:
+          sortDef = { createdAt: -1 };
+      }
+
+      try {
+        const postCount = await Post.find().countDocuments();
+        const paginated = paginate(page, limit, postCount);
+        const posts = await Post.find()
+          .sort(sortDef)
+          .limit(limit)
+          .skip(paginated.start);
+
+        const paginatedPosts = {
+          previous: paginated.results.previous,
+          posts,
+          next: paginated.results.next,
+        };
+
+        return paginatedPosts;
+      } catch (err) {
+        throw new UserInputError(err);
       }
     },
   },

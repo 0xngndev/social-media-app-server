@@ -1,6 +1,12 @@
 const { gql } = require("apollo-server");
 
 module.exports = gql`
+  enum SortByType {
+    NEWEST
+    OLDEST
+    TOP
+  }
+
   type User {
     id: ID!
     createdAt: String!
@@ -48,6 +54,17 @@ module.exports = gql`
     username: String!
   }
 
+  type PaginationNextPrev {
+    limit: Int!
+    page: Int!
+  }
+
+  type PaginationResult {
+    next: PaginationNextPrev
+    previous: PaginationNextPrev
+    posts: [Post]!
+  }
+
   input RegisterInput {
     username: String!
     email: String!
@@ -57,6 +74,11 @@ module.exports = gql`
   type Query {
     getPost(postId: ID!): Post
     getPosts: [Post]
+    getPaginatedPosts(
+      sortBy: SortByType!
+      page: Int!
+      limit: Int!
+    ): PaginationResult!
     getUsers: [User]
     getUser(token: String!): User
     getUserById(userId: ID!): User
