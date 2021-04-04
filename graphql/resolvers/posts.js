@@ -84,23 +84,60 @@ module.exports = {
         throw new UserInputError(err);
       }
     },
-    getPostByFollows: async (_, __, context) => {
+    getPostByFollows: async (_, args, context) => {
+      const { sortBy } = args;
       const loggedUser = checkAuth(context);
+      const page = Number(args.page);
+      const limit = Number(args.limit);
+
+      let sortDef;
+      switch (sortBy) {
+        case "TOP":
+          sortDef = { likes: -1 };
+          break;
+        case "VIEWS":
+          sortDef = { views: -1 };
+          break;
+        case "HOT":
+          sortDef = { hot: -1 };
+          break;
+        case "NEWEST":
+          sortDef = { createdAt: -1 };
+          break;
+        case "OLDEST":
+          sortDef = { createdAt: 1 };
+          break;
+        default:
+          sortDef = { createdAt: -1 };
+      }
 
       try {
         const user = await User.findById(loggedUser.id);
+        if (!user) {
+          throw new Error("Check user is logged in");
+        }
         const followingIds = user.follows.map((follow) => follow.username);
         const users = await User.find({
           username: { $in: followingIds },
         });
         const usersPosts = users.map((user) => user.posts);
         const postsArray = usersPosts.flatMap((x) => x);
-        const posts = await Post.find({ _id: { $in: postsArray } }).populate(
-          "author",
-          "username"
-        );
+        const postCount = postsArray.length;
+        const paginated = paginate(page, limit, postCount);
+        const posts = await Post.find({ _id: { $in: postsArray } })
+          .populate("author", "username")
+          .sort(sortDef)
+          .limit(limit)
+          .skip(paginated.start);
 
-        return posts;
+        const paginatedPosts = {
+          previous: paginated.results.previous,
+          posts,
+          next: paginated.results.next,
+        };
+        console.log(postsArray.length);
+
+        return paginatedPosts;
       } catch (err) {
         throw new UserInputError(err);
       }
