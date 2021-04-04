@@ -17,10 +17,10 @@ module.exports = {
         }
         post.views++;
         post.hot =
-          Math.log(post.views * 2) +
-          Math.log(post.likes.length * 8) +
-          Math.log(post.comments.length * 3) +
-          post.createdAt / 10000000000;
+          Math.log(post.views * 2 + 1) +
+          Math.log(post.likes.length * 8 + 1) +
+          Math.log(post.comments.length * 3 + 1) +
+          post.createdAt / 1000000000;
 
         await post.save();
         return post;
