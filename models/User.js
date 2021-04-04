@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
         createdAt: String,
       },
     ],
+    follows: [
+      {
+        username: String,
+        createdAt: String,
+      },
+    ],
   },
   { timestamps: true }
 );

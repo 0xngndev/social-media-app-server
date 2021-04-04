@@ -124,27 +124,41 @@ module.exports = {
       };
     },
     followUser: async (_, { userId }, context) => {
-      const user = checkAuth(context);
-      if (!user) {
+      const userLogged = checkAuth(context);
+      if (!userLogged) {
         throw new AuthenticationError("You must be logged in to follow users");
       }
+      const user = await User.findById(userLogged.id);
       const followedUser = await User.findById(userId);
       if (followedUser) {
         if (
           followedUser.followers.find(
-            (follower) => follower.username === user.username
+            (follower) => follower.username === userLogged.username
+          ) &&
+          user.follows.find(
+            (userUserFollows) =>
+              userUserFollows.username === followedUser.username
           )
         ) {
           followedUser.followers = followedUser.followers.filter(
-            (follower) => follower.username !== user.username
+            (follower) => follower.username !== userLogged.username
+          );
+          user.follows = user.follows.filter(
+            (userUserFollows) =>
+              userUserFollows.username !== followedUser.username
           );
         } else {
           followedUser.followers.push({
-            id: user.id,
-            username: user.username,
-          });
+            id: userLogged.id,
+            username: userLogged.username,
+          }),
+            user.follows.push({
+              id: followedUser.id,
+              username: followedUser.username,
+            });
         }
         await followedUser.save();
+        await user.save();
         return followedUser;
       } else throw new UserInputError("User not found");
     },

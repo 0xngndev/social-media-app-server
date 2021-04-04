@@ -17,10 +17,16 @@ module.exports = gql`
     email: String!
     followers: [Follower]!
     followerCount: Int!
+    follows: [Follows]!
     posts: [ID]!
   }
 
   type Follower {
+    id: ID!
+    username: String!
+  }
+
+  type Follows {
     id: ID!
     username: String!
   }
