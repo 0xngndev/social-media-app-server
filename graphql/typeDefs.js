@@ -93,6 +93,7 @@ module.exports = gql`
     getUser(token: String!): User
     getUserById(userId: ID!): User
     getUserByUsername(username: String!): User
+    getPostByFollows: [Post]
   }
 
   type Mutation {
