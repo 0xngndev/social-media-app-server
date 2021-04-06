@@ -11,11 +11,9 @@ module.exports = {
       try {
         const post = await Post.findById(postId).populate("author", "username");
 
-        console.log(post);
         if (!post) {
           throw new Error("That post does not exist.");
         }
-        post.views++;
         post.hot =
           Math.log(post.views * 2 + 1) +
           Math.log(post.likes.length * 8 + 1) +
@@ -135,7 +133,6 @@ module.exports = {
           posts,
           next: paginated.results.next,
         };
-        console.log(postsArray.length);
 
         return paginatedPosts;
       } catch (err) {
@@ -152,7 +149,6 @@ module.exports = {
       if (title.trim() === "") {
         throw new Error("You must provide a title");
       }
-      console.log(user);
 
       try {
         const author = await User.findById(user.id);
@@ -179,6 +175,13 @@ module.exports = {
       } catch (error) {
         throw new Error(error);
       }
+    },
+    addView: async (_, { postId }) => {
+      const post = await Post.findById(postId);
+      console.log(post);
+      post.views++;
+      await post.save();
+      return "Added view!";
     },
     updatePost: async (_, { postId, body, title }, context) => {
       const user = checkAuth(context);

@@ -111,6 +111,7 @@ module.exports = gql`
     deleteComment(postId: ID!, commentId: ID!): Post!
     likePost(postId: ID!): Post!
     followUser(userId: ID!): User!
+    addView(postId: ID!): String!
   }
 
   type Subscription {
