@@ -150,6 +150,18 @@ module.exports = {
         throw new Error("You must provide a title");
       }
 
+      if (body.split(" ").length > 500) {
+        throw new Error("The body can't be longer than 500 words");
+      }
+
+      if (body) {
+        for (let i = 0; i < body.split(" ").length; i++) {
+          if (body.split(" ")[i].length > 30) {
+            throw new Error("Words can't have more than 30 characters");
+          }
+        }
+      }
+
       try {
         const author = await User.findById(user.id);
 
@@ -178,7 +190,6 @@ module.exports = {
     },
     addView: async (_, { postId }) => {
       const post = await Post.findById(postId);
-      console.log(post);
       post.views++;
       await post.save();
       return "Added view!";
