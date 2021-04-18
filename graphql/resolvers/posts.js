@@ -220,7 +220,7 @@ module.exports = {
           throw new UserInputError("That post does not exist");
         }
 
-        if (user.id === post.author.toString()) {
+        if (user.id === post.author.id.toString()) {
           throw new AuthenticationError("Access is denied");
         }
 
